@@ -16,11 +16,12 @@
  */
 package org.apache.commons.lang3;
 
-import java.util.Arrays;
+import java.awt.*;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -377,4 +378,103 @@ public class RegExUtilsTest extends AbstractLangTest {
         assertEquals("ABC123", RegExUtils.replacePattern("ABCabc123", "[^A-Z0-9]+", ""));
         assertEquals("Lorem_ipsum_dolor_sit", RegExUtils.replacePattern("Lorem ipsum  dolor   sit", "( +)([a-z]+)", "_$2"));
     }
+
+    private RegExUtils utils;
+
+    @BeforeEach
+    void setUp() {
+        utils = new RegExUtils();
+    }
+
+
+
+    @Test
+    public void testFindMultipleMatches() {
+        Pattern pattern = Pattern.compile("\\d+");
+        List<String> result = utils.findMatches("asd 123 fgd 456 zxc", pattern);
+        assertEquals(List.of("123", "456"), result);
+    }
+
+    @Test
+    public void testFindNoMatches() {
+        Pattern pattern = Pattern.compile("\\d+");
+        List<String> result = utils.findMatches("asd zxc", pattern);
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void testFindMatchesWhenTextIsEmpty() {
+        String[] result = utils.findMatchesAsArray("", "\\w+");
+        assertArrayEquals(new String[0], result);
+    }
+
+    @Test
+    public void testShouldReturnArrayList() {
+        Pattern pattern = Pattern.compile("\\w+");
+        List<String> result = utils.findMatches("test", pattern);
+        assertEquals(List.of("test"), result);
+    }
+
+    @Test
+    public void testFindMatchesWhenTextIsNull() {
+        Pattern pattern = Pattern.compile("test");
+        List<String> result = utils.findMatches(null, pattern);
+        assert (result).isEmpty();
+    }
+
+
+    @Test
+    public void testFindMatchesWhenPatternIsNull() {
+        List<String> result = utils.findMatches("test", null);
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    public void testFindMatchesWithEmptyText() {
+        Pattern pattern = Pattern.compile("\\d+");
+        List<String> result = utils.findMatches("", pattern);
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    public void testFindMultipleMatchesAsArray() {
+        String[] result = utils.findMatchesAsArray("test 123 test", "\\w+");
+        assertArrayEquals(new String[]{"test", "123", "test"}, result);
+    }
+
+    @Test
+    void testFindMatchesAsArrayWhenNoMatches() {
+        String[] result = utils.findMatchesAsArray("abc", "\\d");
+        assertArrayEquals(new String[0], result);
+    }
+
+    @Test
+    void testFindMatchesAsArrayWhenTextIsNull() {
+        String[] result = utils.findMatchesAsArray(null, "\\w+");
+        assertArrayEquals(new String[0], result);
+    }
+
+    @Test
+    void testFindMatchesAsArrayWhenTextIsEmpty() {
+        String[] result = utils.findMatchesAsArray("", "\\w+");
+        assertArrayEquals(new String[0], result);
+    }
+
+    @Test
+    void testFindMatchesAsArrayWithInvalidRegex() {
+        String[] result = utils.findMatchesAsArray("text", "[a-z");
+        assertArrayEquals(new String[0], result);
+    }
+
+    @Test
+    public void testReturnedListIsUnmodifiable() {
+        Pattern pattern = Pattern.compile("\\w+");
+        List<String> result = utils.findMatches("test", pattern);
+
+        try {
+            result.add("should fail");
+            fail("Expected UnsupportedOperationException");
+        } catch (UnsupportedOperationException e) {}
+    }
+
 }
